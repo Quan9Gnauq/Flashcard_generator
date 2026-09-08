@@ -1,4 +1,4 @@
-# pjflashcard01
+# flashcard generator
 
 Đây là ứng dụng di động hỗ trợ học tập và ghi nhớ kiến thức (từ vựng ngoại ngữ, thuật ngữ IT, kiến thức tổng hợp) thông qua phương pháp thẻ ghi nhớ (Flashcards). Ứng dụng được thiết kế tối ưu trải nghiệm người dùng từ bản vẽ Figma, xây dựng trên nền tảng Flutter và hoạt động hoàn toàn offline với cơ sở dữ liệu SQLite cục bộ.
 
