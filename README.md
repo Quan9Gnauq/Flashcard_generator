@@ -15,9 +15,6 @@ Key Features
 - Retention Assessment: Rate your mastery level (Easy / Medium / Hard / Not Yet Learned) to help the system schedule future repetitions.
 - Spaced Repetition Algorithm: Prioritizes the reappearance of cards that are not yet mastered or are due for review.
 
-3. Lưu Trữ Offline & Bảo Mật Dữ Liệu
-- **Lưu trữ cục bộ SQLite**: Toàn bộ bộ thẻ, lịch sử học tập được lưu trực tiếp trên thiết bị, không cần kết nối Internet, truy xuất dữ liệu cực nhanh.
-- **Độc lập & Riêng tư**: Không yêu cầu đăng nhập tài khoản, đảm bảo tính riêng tư hoàn toàn cho dữ liệu học tập.
 3. Offline Storage & Data Security**
 - Local SQLite Storage: All decks and study history are stored directly on the device; no internet connection is required, ensuring rapid data retrieval.
 - Independence & Privacy: No account login required, ensuring complete privacy for your study data.
