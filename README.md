@@ -29,7 +29,7 @@ Key Features
 
 - [x] Complete UI/UX design on Figma
 - [x] Build Flutter UI framework & screen navigation
-- [x] Integrate local SQLite databaseộ (`sqflite`)
+- [x] Integrate local SQLite database (`sqflite`)
 - [ ] Integrate Text-to-Speech (TTS) for accurate pronunciation
 - [ ] Visualize learning progress via charts
 - [ ] flashcard generation from documents/images
