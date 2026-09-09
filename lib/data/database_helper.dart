@@ -37,10 +37,11 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         deckId INTEGER NOT NULL,
         frontText TEXT NOT NULL,
-        meaning TEXT,
+        meaning TEXT NOT NULL,
         reading TEXT,
         example TEXT,
         imagePath TEXT,
+        status INTEGER DEFAULT 0, -- THÊM CỘT TRẠNG THÁI
         FOREIGN KEY (deckId) REFERENCES decks (id) ON DELETE CASCADE
       )
     ''');
@@ -78,6 +79,7 @@ class DatabaseHelper {
       reading: json['reading'] as String?,
       example: json['example'] as String?,
       imagePath: json['imagePath'] as String?,
+      status: json['status'] as int? ?? 0, // Đọc trạng thái
     )).toList();
   }
   Future<void> deleteDeck(int deckId) async {
@@ -86,5 +88,14 @@ class DatabaseHelper {
     await db.delete('vocabs', where: 'deckId = ?', whereArgs: [deckId]);
     // Sau đó xóa bộ từ
     await db.delete('decks', where: 'id = ?', whereArgs: [deckId]);
+  }
+  Future<int> updateVocabStatus(int id, int status) async {
+    final db = await instance.database;
+    return await db.update(
+      'vocabs',
+      {'status': status},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

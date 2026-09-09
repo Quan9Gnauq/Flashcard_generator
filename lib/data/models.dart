@@ -18,6 +18,7 @@ class Vocab {
   final String? reading;
   final String? example;
   final String? imagePath;
+  int status; // Thêm trường trạng thái: 0 (Mặc định), 1 (Đã học), 2 (Chưa nhớ), 3 (Đã nhớ)
 
   Vocab({
     this.id,
@@ -27,6 +28,7 @@ class Vocab {
     this.reading,
     this.example,
     this.imagePath,
+    this.status = 0, // Mặc định là 0 khi vừa tạo
   });
 
   Map<String, dynamic> toMap() {
@@ -38,6 +40,7 @@ class Vocab {
       'reading': reading,
       'example': example,
       'imagePath': imagePath,
+      'status': status, // Lưu vào Map
     };
   }
 }
