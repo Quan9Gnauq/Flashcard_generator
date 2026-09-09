@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'dart:math';
 import '../../data/database_helper.dart';
 import '../../data/models.dart';
@@ -16,17 +17,12 @@ class FlashcardsScreen extends StatefulWidget {
 }
 
 class _FlashcardsScreenState extends State<FlashcardsScreen> {
+  final FlutterTts flutterTts = FlutterTts();
   bool isFlipped = false;
   List<Vocab> _activeVocabs = []; // Thẻ đang học
   List<Vocab> _memorizedVocabs = []; // Thẻ đã nhớ
   int _currentIndex = 0;
   bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadVocabs();
-  }
 
   Future<void> _loadVocabs() async {
     final vocabs = await DatabaseHelper.instance.getVocabsByDeckId(widget.deck.id!);
@@ -80,6 +76,32 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
         }
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVocabs();
+    _initTts(); // 2. Gọi hàm khởi tạo cấu hình giọng đọc
+  }
+
+  // 3. Hàm cấu hình giọng đọc
+  Future<void> _initTts() async {
+    await flutterTts.setLanguage("ja-JP"); // Mặc định thiết lập giọng tiếng Nhật. (Có thể đổi thành "en-US" cho tiếng Anh, "vi-VN" cho tiếng Việt)
+    await flutterTts.setSpeechRate(0.5); // Chỉnh tốc độ đọc (0.0 đến 1.0)
+    await flutterTts.setVolume(1.0); // Chỉnh âm lượng
+  }
+
+  // 4. Hàm phát âm
+  Future<void> _speak(String text) async {
+    await flutterTts.speak(text);
+  }
+
+  // 5. Tắt máy đọc khi thoát màn hình để giải phóng bộ nhớ
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
   }
 
   @override
@@ -171,6 +193,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
   }
 
   // Hàm tạo giao diện thẻ (gộp chung cho dễ quản lý)
+  // Hàm tạo giao diện thẻ
   Widget _buildFace({required bool isFront, required Vocab vocab}) {
     return Stack(
       key: ValueKey(isFront),
@@ -182,15 +205,41 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
           decoration: BoxDecoration(color: const Color(0xFFE2E2E2), borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.all(20),
           child: isFront
-              ? Center( // Mặt trước
+              ? Center( // MẶT TRƯỚC ĐÃ ĐƯỢC SỬA
             child: Container(
-              width: 200, height: 120,
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey, width: 1.5), color: const Color(0xFFF3F3F3)),
-              alignment: Alignment.center,
-              child: Text(vocab.frontText, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+              width: 220, // Nới rộng thẻ một chút
+              height: 140, // Tăng chiều cao để chứa loa
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey, width: 1.5),
+                  color: const Color(0xFFF3F3F3)
+              ),
+              child: Stack(
+                children: [
+                  // Chữ từ vựng nằm ở giữa
+                  Center(
+                    child: Text(
+                        vocab.frontText,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center
+                    ),
+                  ),
+                  // Nút Loa nằm ở góc dưới cùng bên phải
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: IconButton(
+                      icon: const Icon(Icons.volume_up, color: Colors.blue, size: 28),
+                      onPressed: () {
+                        // Nút này tự động chặn sự kiện lật thẻ, chỉ gọi hàm đọc
+                        _speak(vocab.frontText);
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           )
-              : Column( // Mặt sau
+              : Column( // MẶT SAU (Giữ nguyên như cũ)
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (vocab.reading != null && vocab.reading!.isNotEmpty) ...[
