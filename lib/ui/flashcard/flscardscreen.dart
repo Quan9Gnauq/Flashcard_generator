@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'dart:math';
@@ -19,8 +18,8 @@ class FlashcardsScreen extends StatefulWidget {
 class _FlashcardsScreenState extends State<FlashcardsScreen> {
   final FlutterTts flutterTts = FlutterTts();
   bool isFlipped = false;
-  List<Vocab> _activeVocabs = []; // Thẻ đang học
-  List<Vocab> _memorizedVocabs = []; // Thẻ đã nhớ
+  List<Vocab> _activeVocabs = [];
+  List<Vocab> _memorizedVocabs = [];
   int _currentIndex = 0;
   bool _isLoading = true;
 
@@ -32,7 +31,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
       _memorizedVocabs = vocabs.where((v) => v.status == 3).toList();
 
       if (_currentIndex >= _activeVocabs.length) {
-        _currentIndex = 0; // Reset index nếu bị vượt quá
+        _currentIndex = 0;
       }
       _isLoading = false;
     });
@@ -62,7 +61,6 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
         _memorizedVocabs.add(currentVocab);
         _activeVocabs.removeAt(_currentIndex);
 
-        // Điều chỉnh lại Index sau khi xóa
         if (_currentIndex >= _activeVocabs.length) {
           _currentIndex = 0;
         }
@@ -82,22 +80,22 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
   void initState() {
     super.initState();
     _loadVocabs();
-    _initTts(); // 2. Gọi hàm khởi tạo cấu hình giọng đọc
+    _initTts();
   }
 
-  // 3. Hàm cấu hình giọng đọc
+  // Hàm cấu hình giọng đọc
   Future<void> _initTts() async {
-    await flutterTts.setLanguage("ja-JP"); // Mặc định thiết lập giọng tiếng Nhật. (Có thể đổi thành "en-US" cho tiếng Anh, "vi-VN" cho tiếng Việt)
-    await flutterTts.setSpeechRate(0.5); // Chỉnh tốc độ đọc (0.0 đến 1.0)
-    await flutterTts.setVolume(1.0); // Chỉnh âm lượng
+    await flutterTts.setLanguage("ja-JP");
+    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.setVolume(1.0);
   }
 
-  // 4. Hàm phát âm
+  // Hàm phát âm
   Future<void> _speak(String text) async {
     await flutterTts.speak(text);
   }
 
-  // 5. Tắt máy đọc khi thoát màn hình để giải phóng bộ nhớ
+  // Tắt máy đọc khi thoát màn hình để giải phóng bộ nhớ
   @override
   void dispose() {
     flutterTts.stop();
@@ -111,7 +109,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(36.0),
         child: Column(
           children: [
             // Thanh thống kê tiến độ
@@ -122,7 +120,6 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                     'Đang học\n${_activeVocabs.isEmpty ? 0 : _currentIndex + 1}/${_activeVocabs.length}',
                     color: Colors.white
                 ),
-                // Nút "Đã nhớ" (Nhấn vào sẽ mở danh sách)
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -130,18 +127,17 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                       MaterialPageRoute(
                         builder: (context) => MemorizedScreen(memorizedVocabs: _memorizedVocabs),
                       ),
-                    ).then((_) => _loadVocabs()); // Load lại khi quay về
+                    ).then((_) => _loadVocabs());
                   },
                   child: _buildStatBadge(
                       'Đã nhớ\n${_memorizedVocabs.length}',
-                      color: Colors.green[100] // Màu xanh nhạt để nổi bật
+                      color: Colors.green[100]
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 72),
 
-            // Vùng hiển thị Flashcard
             Expanded(
               child: _activeVocabs.isEmpty
                   ? const Center(child: Text('Chúc mừng! Bạn đã hoàn thành bộ thẻ này.', style: TextStyle(fontSize: 18)))
@@ -173,7 +169,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 72),
 
             // Các nút đánh giá
             if (_activeVocabs.isNotEmpty)
@@ -185,52 +181,47 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                   GestureDetector(onTap: () => _markCard(1), child: _buildActionButton('Đã học', Colors.green[100])),
                 ],
               ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 72),
           ],
         ),
       ),
     );
   }
 
-  // Hàm tạo giao diện thẻ (gộp chung cho dễ quản lý)
-  // Hàm tạo giao diện thẻ
   Widget _buildFace({required bool isFront, required Vocab vocab}) {
     return Stack(
       key: ValueKey(isFront),
       children: [
-        // Nội dung thẻ
         Container(
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(color: const Color(0xFFE2E2E2), borderRadius: BorderRadius.circular(12)),
           padding: const EdgeInsets.all(20),
           child: isFront
-              ? Center( // MẶT TRƯỚC ĐÃ ĐƯỢC SỬA
+              ? Center(
             child: Container(
-              width: 220, // Nới rộng thẻ một chút
-              height: 140, // Tăng chiều cao để chứa loa
+              width: 220,
+              height: 220,
               decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey, width: 1.5),
-                  color: const Color(0xFFF3F3F3)
+                  //border: Border.all(color: Colors.grey, width: 1.5),
+                  color: const Color(0xFFE2E2E2)
               ),
               child: Stack(
                 children: [
-                  // Chữ từ vựng nằm ở giữa
                   Center(
                     child: Text(
                         vocab.frontText,
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center
                     ),
                   ),
-                  // Nút Loa nằm ở góc dưới cùng bên phải
                   Positioned(
                     bottom: 4,
                     right: 4,
                     child: IconButton(
                       icon: const Icon(Icons.volume_up, color: Colors.blue, size: 28),
                       onPressed: () {
-                        // Nút này tự động chặn sự kiện lật thẻ, chỉ gọi hàm đọc
+                        // Chặn sự kiện lật thẻ, chỉ gọi hàm đọc
                         _speak(vocab.frontText);
                       },
                     ),
@@ -239,7 +230,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
               ),
             ),
           )
-              : Column( // MẶT SAU (Giữ nguyên như cũ)
+              : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (vocab.reading != null && vocab.reading!.isNotEmpty) ...[
@@ -255,7 +246,10 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(border: Border.all(color: Colors.grey, width: 1.5), color: const Color(0xFFF3F3F3)),
+                  decoration:
+                  BoxDecoration(
+                      //border: Border.all(color: Colors.grey, width: 1.5),
+                      color: const Color(0xFFE2E2E2)),
                   alignment: Alignment.center,
                   child: vocab.imagePath != null && vocab.imagePath!.isNotEmpty
                       ? Image.file(File(vocab.imagePath!), fit: BoxFit.contain)
@@ -266,7 +260,6 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
           ),
         ),
 
-        // Ký hiệu trạng thái ở góc trên bên phải
         Positioned(
           top: 10,
           right: 10,
@@ -276,7 +269,6 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
     );
   }
 
-  // Icon biểu thị trạng thái thẻ
   Widget _buildStatusIcon(int status) {
     if (status == 1) return const Icon(Icons.check_circle, color: Colors.green, size: 32);
     if (status == 2) return const Icon(Icons.cancel, color: Colors.red, size: 32);
@@ -307,8 +299,6 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
     );
   }
 }
-
-// MÀN HÌNH DANH SÁCH TỪ ĐÃ NHỚ
 
 class MemorizedScreen extends StatelessWidget {
   final List<Vocab> memorizedVocabs;

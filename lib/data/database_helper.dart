@@ -22,7 +22,6 @@ class DatabaseHelper {
   }
 
   Future _createDB(Database db, int version) async {
-    // Tạo bảng Bộ từ
     await db.execute('''
       CREATE TABLE decks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +30,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Tạo bảng Từ vựng
     await db.execute('''
       CREATE TABLE vocabs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +45,6 @@ class DatabaseHelper {
     ''');
   }
 
-  // --- Chức năng thêm dữ liệu ---
   Future<int> insertDeck(Deck deck) async {
     final db = await instance.database;
     return await db.insert('decks', deck.toMap());
@@ -58,7 +55,6 @@ class DatabaseHelper {
     return await db.insert('vocabs', vocab.toMap());
   }
 
-  // --- Chức năng lấy dữ liệu ---
   Future<List<Deck>> getAllDecks() async {
     final db = await instance.database;
     final result = await db.query('decks');
@@ -84,9 +80,9 @@ class DatabaseHelper {
   }
   Future<void> deleteDeck(int deckId) async {
     final db = await instance.database;
-    // Xóa tất cả thẻ từ vựng thuộc bộ từ này trước
+
     await db.delete('vocabs', where: 'deckId = ?', whereArgs: [deckId]);
-    // Sau đó xóa bộ từ
+
     await db.delete('decks', where: 'id = ?', whereArgs: [deckId]);
   }
   Future<int> updateVocabStatus(int id, int status) async {

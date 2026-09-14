@@ -19,7 +19,7 @@ class _DecksScreenState extends State<DecksScreen> {
   @override
   void initState() {
     super.initState();
-    _loadDecks(); // Tải danh sách bộ từ khi mở màn hình
+    _loadDecks();
   }
 
   void _showDeleteConfirmation(int deckId) {
@@ -38,7 +38,7 @@ class _DecksScreenState extends State<DecksScreen> {
               onPressed: () async {
                 Navigator.pop(context); // Đóng hộp thoại
                 await DatabaseHelper.instance.deleteDeck(deckId); // Xóa khỏi DB
-                _loadDecks(); // Tải lại danh sách màn hình
+                _loadDecks();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Đã xóa bộ từ!'), backgroundColor: Colors.green),
                 );
@@ -51,7 +51,6 @@ class _DecksScreenState extends State<DecksScreen> {
     );
   }
 
-  // Hàm tải dữ liệu từ SQLite
   Future<void> _loadDecks() async {
     final decks = await DatabaseHelper.instance.getAllDecks();
     setState(() {
@@ -68,8 +67,6 @@ class _DecksScreenState extends State<DecksScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ... (Thanh tìm kiếm giữ nguyên như cũ) ...
-
             // Khu vực Thêm bộ từ
             Container(
               width: double.infinity,
@@ -81,12 +78,10 @@ class _DecksScreenState extends State<DecksScreen> {
                   const SizedBox(height: 16),
                   InkWell(
                     onTap: () async {
-                      // Chờ người dùng hoàn tất quá trình tạo bộ từ và thẻ
                       await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const CreateDeckScreen()),
                       );
-                      // Khi quay lại màn hình này, tự động load lại danh sách bộ từ
                       _loadDecks();
                     },
                     child: Container(
@@ -103,8 +98,6 @@ class _DecksScreenState extends State<DecksScreen> {
             const Text('hiển thị bộ từ đã tạo:', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
 
-            // Khu vực hiển thị bộ từ ĐÃ TẠO từ Database
-            // Khu vực hiển thị bộ từ ĐÃ TẠO từ Database
             Expanded(
               child: _decks.isEmpty
                   ? const Center(child: Text('Chưa có bộ từ nào. Hãy tạo mới!'))
@@ -116,7 +109,6 @@ class _DecksScreenState extends State<DecksScreen> {
                     padding: const EdgeInsets.only(bottom: 12.0),
                     child: GestureDetector(
                       onTap: () {
-                        // Chuyển sang màn hình Flashcard khi nhấn vào khung
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -126,17 +118,15 @@ class _DecksScreenState extends State<DecksScreen> {
                       },
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12), // Chỉnh lại padding cho cân đối
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE2E2E2), // Hoặc AppColors.cardGrey
+                          color: const Color(0xFFE2E2E2),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey), // Hoặc AppColors.borderGrey
+                          border: Border.all(color: Colors.grey),
                         ),
                         child: Row(
                           children: [
                             const SizedBox(width: 48), // Tạo khoảng trống để đẩy Title ra giữa
-
-                            // Tên bộ từ ở giữa
                             Expanded(
                               child: Text(
                                 deck.title,
@@ -144,13 +134,10 @@ class _DecksScreenState extends State<DecksScreen> {
                                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                             ),
-
-                            // Nút mở rộng (3 chấm) ở góc phải
                             PopupMenuButton<String>(
                               icon: const Icon(Icons.more_vert, color: Colors.black54),
                               onSelected: (value) async {
                                 if (value == 'add_vocab') {
-                                  // 1. Chuyển sang màn hình thêm từ vựng (mặt trước)
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -158,7 +145,6 @@ class _DecksScreenState extends State<DecksScreen> {
                                     ),
                                   );
                                 } else if (value == 'delete_deck') {
-                                  // 2. Hiển thị hộp thoại xác nhận trước khi xóa
                                   _showDeleteConfirmation(deck.id!);
                                 }
                               },

@@ -28,7 +28,7 @@ class Vocab {
     this.reading,
     this.example,
     this.imagePath,
-    this.status = 0, // Mặc định là 0 khi vừa tạo
+    this.status = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -40,7 +40,7 @@ class Vocab {
       'reading': reading,
       'example': example,
       'imagePath': imagePath,
-      'status': status, // Lưu vào Map
+      'status': status,
     };
   }
 }

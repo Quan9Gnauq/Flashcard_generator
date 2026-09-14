@@ -7,7 +7,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildCustomAppBar('YUUGATA'),
+      appBar: buildCustomAppBar('FLASHCARD GENERATOR'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

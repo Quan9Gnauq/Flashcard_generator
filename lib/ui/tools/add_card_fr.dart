@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../data/database_helper.dart';
+import '../../data/models.dart';
 import '../styles.dart';
-import '../../main.dart'; // Import AppColors
-import 'add_card_ba.dart'; // Import màn hình mặt sau
+import 'add_card_ba.dart';
+import 'ai_service.dart';
 
 class AddVocabFrontScreen extends StatefulWidget {
-  final int deckId; // Nhận ID của bộ từ để biết thêm từ vào đâu
+  final int deckId;
 
   const AddVocabFrontScreen({Key? key, required this.deckId}) : super(key: key);
 
@@ -14,6 +16,74 @@ class AddVocabFrontScreen extends StatefulWidget {
 
 class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
   final TextEditingController _frontController = TextEditingController();
+  bool _isLoadingAI = false;
+  String _statusText = '';
+
+  Future<void> _generateMultipleVocabsWithAI() async {
+    final rawInput = _frontController.text.trim();
+
+    if (rawInput.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập từ vựng!'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    // Tách chuỗi theo dấu phẩy thường (,), dấu phẩy tiếng Nhật (、) hoặc dấu xuống dòng (\n)
+    final List<String> wordList = rawInput
+        .split(RegExp(r'[,、\n\r]+'))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    if (wordList.isEmpty) return;
+
+    setState(() {
+      _isLoadingAI = true;
+      _statusText = 'AI đang phân tích ${wordList.length} từ...';
+    });
+    try {
+      final List<Map<String, dynamic>> aiResults = await AIService.generateBatchVocabData(wordList);
+      setState(() {
+        _statusText = 'Đang lưu vào danh sách...';
+      });
+      for (var data in aiResults) {
+        final newVocab = Vocab(
+          deckId: widget.deckId,
+          frontText: data['word'] ?? '',
+          meaning: data['meaning'] ?? '',
+          reading: data['reading'] ?? '',
+          example: data['example'] ?? '',
+          imagePath: data['imagePath'],
+          status: 0,
+        );
+        await DatabaseHelper.instance.insertVocab(newVocab);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tạo thành công ${aiResults.length} thẻ từ vựng!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi tạo hàng loạt: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingAI = false;
+          _statusText = '';
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -21,7 +91,6 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
     super.dispose();
   }
 
-  // Chuyển sang màn hình mặt sau
   void _goToBackScreen() {
     final frontText = _frontController.text.trim();
 
@@ -35,7 +104,6 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
       return;
     }
 
-    // Điều hướng sang màn hình Mặt sau và mang theo frontText
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -80,17 +148,18 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 20),
                         const Center(child: Text('Mặt trước', style: TextStyle(fontSize: 16))),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 36),
                         _buildInputField('Từ hoặc cụm từ (VD: 漢字, Apple...)', controller: _frontController),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
 
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.borderGrey, width: 1.5),
                     borderRadius: BorderRadius.circular(16),
@@ -99,7 +168,7 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('Âm thanh', style: TextStyle(fontSize: 16)),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -113,6 +182,18 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
                 const SizedBox(height: 24),
 
                 _buildActionButtons(context),
+                ElevatedButton.icon(
+                  icon: _isLoadingAI
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Icon(Icons.auto_awesome),
+                  label: Text(_isLoadingAI ? _statusText : 'Tự động tạo bằng AI'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  onPressed: _isLoadingAI ? null : _generateMultipleVocabsWithAI,
+                )
               ],
             ),
           ),
@@ -125,8 +206,7 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
     return Expanded(
       child: TextField(
         controller: controller,
-        maxLines: null,
-        expands: true,
+        maxLines: 10,
         decoration: InputDecoration(
           hintText: hint,
           filled: true,
@@ -146,7 +226,7 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
 
   Widget _buildSoundButton(String text) {
     return OutlinedButton(
-      onPressed: () {}, // Xử lý âm thanh sau
+      onPressed: () {},
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         side: const BorderSide(color: Colors.black, width: 1),
@@ -161,7 +241,7 @@ class _AddVocabFrontScreenState extends State<AddVocabFrontScreen> {
       children: [
         Expanded(
           child: OutlinedButton(
-            onPressed: _goToBackScreen, // Chuyển sang màn hình sau
+            onPressed: _goToBackScreen,
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: const BorderSide(color: AppColors.borderGrey, width: 1.5),

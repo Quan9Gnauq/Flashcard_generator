@@ -14,7 +14,7 @@ class FlashcardFront extends StatelessWidget {
       ),
       child: Center(
         child: Container(
-          width: 200,
+          width: 240,
           height: 120,
           decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderGrey, width: 1.5),

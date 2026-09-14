@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../data/database_helper.dart';
-import '../../main.dart'; // Import file chứa định nghĩa AppColors
-import '../../data/models.dart'; // Import model Deck
-import '../../data/database_helper.dart';
+import '../../data/models.dart';
 import '../styles.dart';
-import 'add_card_fr.dart'; // Import class xử lý Database
+import 'add_card_fr.dart';
 
 class CreateDeckScreen extends StatefulWidget {
   const CreateDeckScreen({Key? key}) : super(key: key);
@@ -14,19 +12,18 @@ class CreateDeckScreen extends StatefulWidget {
 }
 
 class _CreateDeckScreenState extends State<CreateDeckScreen> {
-  // 1. Khai báo các controller để quản lý nội dung nhập liệu
+
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
 
   @override
   void dispose() {
-    // 2. Luôn nhớ dọn dẹp controller khi màn hình bị hủy để tránh rò rỉ bộ nhớ
+    // Dọn dẹp controller khi màn hình bị hủy để tránh rò rỉ bộ nhớ
     _titleController.dispose();
     _descController.dispose();
     super.dispose();
   }
 
-  // 3. Hàm xử lý logic khi bấm nút OK
   Future<void> _saveDeck() async {
     final title = _titleController.text.trim();
     final description = _descController.text.trim();
@@ -43,7 +40,6 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
       int newDeckId = await DatabaseHelper.instance.insertDeck(newDeck);
 
       if (mounted) {
-        // Thay vì Navigator.pop, ta dùng pushReplacement để chuyển thẳng sang AddVocabFrontScreen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -81,7 +77,6 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Khối nhập liệu chính
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(16),
@@ -101,8 +96,6 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Nút OK - HỦY
                 _buildActionButtons(context),
               ],
             ),
@@ -112,7 +105,6 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
     );
   }
 
-  // Cập nhật hàm này để nhận thêm tham số TextEditingController
   Widget _buildInputField(String hint, {required TextEditingController controller, int flex = 1}) {
     return Expanded(
       flex: flex,
@@ -154,7 +146,7 @@ class _CreateDeckScreenState extends State<CreateDeckScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton(
-            onPressed: () => Navigator.pop(context), // Hủy và đóng màn hình
+            onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: const BorderSide(color: AppColors.borderGrey, width: 1.5),

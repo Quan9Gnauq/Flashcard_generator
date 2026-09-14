@@ -11,10 +11,20 @@ class AddVocabBackScreen extends StatefulWidget {
   final int deckId;
   final String frontText;
 
+  // Thêm các biến nhận dữ liệu tự động
+  final String? initialMeaning;
+  final String? initialReading;
+  final String? initialExample;
+  final String? initialImagePath;
+
   const AddVocabBackScreen({
     Key? key,
     required this.deckId,
-    required this.frontText
+    required this.frontText,
+    this.initialMeaning,
+    this.initialReading,
+    this.initialExample,
+    this.initialImagePath,
   }) : super(key: key);
 
   @override
@@ -22,9 +32,9 @@ class AddVocabBackScreen extends StatefulWidget {
 }
 
 class _AddVocabBackScreenState extends State<AddVocabBackScreen> {
-  final TextEditingController _meaningController = TextEditingController();
-  final TextEditingController _readingController = TextEditingController();
-  final TextEditingController _exampleController = TextEditingController();
+  late final TextEditingController _meaningController;
+  late final TextEditingController _readingController;
+  late final TextEditingController _exampleController;
 
   File? _selectedImage;
 
@@ -36,10 +46,23 @@ class _AddVocabBackScreenState extends State<AddVocabBackScreen> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    // Khởi tạo Text Controller kèm dữ liệu AI (nếu có)
+    _meaningController = TextEditingController(text: widget.initialMeaning);
+    _readingController = TextEditingController(text: widget.initialReading);
+    _exampleController = TextEditingController(text: widget.initialExample);
+
+    if (widget.initialImagePath != null) {
+      _selectedImage = File(widget.initialImagePath!);
+    }
+  }
+
   // Hàm gọi thư viện chọn ảnh
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery); // Có thể đổi thành ImageSource.camera để chụp ảnh
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -48,11 +71,10 @@ class _AddVocabBackScreenState extends State<AddVocabBackScreen> {
     }
   }
 
-  // Lưu từ vựng vào Database
   Future<void> _saveVocab() async {
     final meaning = _meaningController.text.trim();
 
-    // Nếu bạn nâng cấp database, có thể lấy thêm data từ _readingController và _exampleController ở đây
+    //nâng cấp database, lấy thêm data từ _readingController và _exampleController ở đây
 
     if (meaning.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,16 +154,16 @@ class _AddVocabBackScreenState extends State<AddVocabBackScreen> {
                         const SizedBox(height: 16),
 
                         GestureDetector(
-                          onTap: _pickImage, // Gọi hàm chọn ảnh khi bấm vào
+                          onTap: _pickImage,
                           child: Container(
-                            width: double.infinity, // Cho khung ảnh rộng ra
+                            width: double.infinity,
                             height: 120,
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.black, width: 1),
-                              color: Colors.grey[200], // Sửa AppColors.cardGrey thành màu của bạn
+                              color: Colors.grey[200],
                             ),
                             child: _selectedImage != null
-                                ? Image.file(_selectedImage!, fit: BoxFit.contain) // Nếu đã chọn ảnh thì hiển thị ảnh
+                                ? Image.file(_selectedImage!, fit: BoxFit.contain)
                                 : const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -208,7 +230,7 @@ class _AddVocabBackScreenState extends State<AddVocabBackScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton(
-            onPressed: () => Navigator.pop(context), // Hủy và quay lại mặt trước
+            onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: const BorderSide(color: AppColors.borderGrey, width: 1.5),
